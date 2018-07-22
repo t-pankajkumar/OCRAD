@@ -1,0 +1,9 @@
+Changes in version 0.26:
+
+Maintenance release.
+
+Ocrad no longer reads from standard input more than once if '-' is
+specified multiple times.
+
+A configure warning happening on some shells when testing for g++ has
+been fixed.
