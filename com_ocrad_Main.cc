@@ -41,9 +41,7 @@ bool verify_descriptor( OCRAD_Descriptor * const ocrdes,
   }
 JNIEXPORT jstring JNICALL Java_com_ocrad_Main_OCRAD_1version(JNIEnv* env,
 		jobject thisObject) {
-	char *buf = (char*) malloc(10);
-	strcpy(buf, OCRAD_version_string);
-	return env->NewStringUTF(buf);
+	return env->NewStringUTF(OCRAD_version_string);
 }
 
 JNIEXPORT jlong JNICALL Java_com_ocrad_Main_OCRAD_1open(JNIEnv* env,
@@ -174,7 +172,5 @@ JNIEXPORT jstring JNICALL Java_com_ocrad_Main_OCRAD_1result_1line(JNIEnv* env,
 		for (int i = 0; i < textline.characters(); ++i)
 			ocrdes->text += textline.character(i).utf8_result();
 	ocrdes->text += '\n';
-	char *buf = (char*) malloc(10);
-	strcpy(buf, ocrdes->text.c_str());
-	return env->NewStringUTF(buf);
+	return env->NewStringUTF(ocrdes->text.c_str());
 }
