@@ -41,6 +41,14 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1get_1errno
 
 /*
  * Class:     com_ocrad_Main
+ * Method:    OCRAD_set_image
+ * Signature: (JLcom/ocrad/Pixmap;Z)I
+ */
+JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image
+  (JNIEnv *, jobject, jlong, jobject, jboolean);
+
+/*
+ * Class:     com_ocrad_Main
  * Method:    OCRAD_set_image_from_file
  * Signature: (JLjava/lang/String;Z)I
  */
