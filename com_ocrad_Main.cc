@@ -31,14 +31,16 @@ struct OCRAD_Descriptor {
 		control.outfile = 0;
 	}
 };
-bool verify_descriptor( OCRAD_Descriptor * const ocrdes,
-                        const bool result = false )
-  {
-  if( !ocrdes ) return false;
-  if( !ocrdes->page_image || ( result && !ocrdes->textpage ) )
-    { ocrdes->ocr_errno = OCRAD_sequence_error; return false; }
-  return true;
-  }
+bool verify_descriptor(OCRAD_Descriptor * const ocrdes, const bool result =
+		false) {
+	if (!ocrdes)
+		return false;
+	if (!ocrdes->page_image || (result && !ocrdes->textpage)) {
+		ocrdes->ocr_errno = OCRAD_sequence_error;
+		return false;
+	}
+	return true;
+}
 JNIEXPORT jstring JNICALL Java_com_ocrad_Main_OCRAD_1version(JNIEnv* env,
 		jobject thisObject) {
 	return env->NewStringUTF(OCRAD_version_string);
@@ -74,11 +76,71 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1get_1errno(JNIEnv* env,
 	return ocrdes->ocr_errno;
 }
 
-JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image
-  (JNIEnv* env, jobject thisObject, jlong ocrdesptr, jobject pixmap, jboolean invert){
-  	OCRAD_Descriptor * const ocrdes = (OCRAD_Descriptor*) ocrdesptr;
-}
+JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
+		jobject thisObject, jlong ocrdesptr, jobject pixmap, jboolean invert) {
+	OCRAD_Descriptor * const ocrdes = (OCRAD_Descriptor*) ocrdesptr;
+	jclass pixmapClass = env->GetObjectClass(pixmap);
 
+    jmethodID getData = env->GetMethodID(pixmapClass, "getData", "()Ljava/lang/String;");
+    jmethodID getHeight = env->GetMethodID(pixmapClass, "getHeight", "()I");
+    jmethodID getWidth = env->GetMethodID(pixmapClass, "getWidth", "()I");
+
+    OCRAD_Pixmap image;
+	
+	jstring data = (jstring) env->CallObjectMethod(pixmap, getData);
+	const unsigned char * img_data = (const unsigned char*) env->GetStringUTFChars( data, NULL);
+	image.data = img_data;
+	image.height = env->CallIntMethod(pixmap, getHeight);
+	image.width =  env->CallIntMethod(pixmap, getWidth);
+	image.mode = OCRAD_greymap;
+
+	/*if (!ocrdes)
+		return -1;
+	if (!image || image->height < 3 || image->width < 3 ||
+	INT_MAX / image->width < image->height
+			|| (image->mode != OCRAD_bitmap && image->mode != OCRAD_greymap
+					&& image->mode != OCRAD_colormap)) {
+		ocrdes->ocr_errno = OCRAD_bad_argument;
+		return -1;
+	}
+
+	try {
+		Page_image * const page_image = new Page_image(*image, invert);
+		if (ocrdes->textpage) {
+			delete ocrdes->textpage;
+			ocrdes->textpage = 0;
+		}
+		if (ocrdes->page_image)
+			delete ocrdes->page_image;
+		ocrdes->page_image = page_image;
+	} catch (std::bad_alloc ) {
+		ocrdes->ocr_errno = OCRAD_mem_error;
+		return -1;
+	}*/
+	return OCRAD_set_image(ocrdes,&image,false);
+}
+int OCRAD_set_image( OCRAD_Descriptor * const ocrdes,
+                     const OCRAD_Pixmap * const image, const bool invert )
+  {
+  if( !ocrdes ) return -1;
+  if( !image || image->height < 3 || image->width < 3 ||
+      INT_MAX / image->width < image->height ||
+      ( image->mode != OCRAD_bitmap && image->mode != OCRAD_greymap &&
+        image->mode != OCRAD_colormap ) )
+    { ocrdes->ocr_errno = OCRAD_bad_argument; return -1; }
+
+  try
+    {
+    Page_image * const page_image = new Page_image( *image, invert );
+    if( ocrdes->textpage )
+      { delete ocrdes->textpage; ocrdes->textpage = 0; }
+    if( ocrdes->page_image ) delete ocrdes->page_image;
+    ocrdes->page_image = page_image;
+    }
+  catch( std::bad_alloc )
+    { ocrdes->ocr_errno = OCRAD_mem_error; return -1; }
+  return 0;
+  }
 JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image_1from_1file(
 		JNIEnv* env, jobject thisObject, jlong ocrdesptr, jstring filenamestr,
 		jboolean invert) {
