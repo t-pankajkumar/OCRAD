@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include <iostream>
+#include <fstream>
 
 #include "ocradlib.h"
 #include "common.h"
@@ -81,19 +83,34 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
 	OCRAD_Descriptor * const ocrdes = (OCRAD_Descriptor*) ocrdesptr;
 	jclass pixmapClass = env->GetObjectClass(pixmap);
 
-    jmethodID getData = env->GetMethodID(pixmapClass, "getData", "()Ljava/lang/String;");
+    jmethodID getData = env->GetMethodID(pixmapClass, "getData", "()[I");
     jmethodID getHeight = env->GetMethodID(pixmapClass, "getHeight", "()I");
     jmethodID getWidth = env->GetMethodID(pixmapClass, "getWidth", "()I");
 
+    jintArray intarray = (jintArray) env->CallObjectMethod(pixmap, getData);
     OCRAD_Pixmap image;
 	
-	jstring data = (jstring) env->CallObjectMethod(pixmap, getData);
-	const unsigned char * img_data = (const unsigned char*) env->GetStringUTFChars( data, NULL);
-	image.data = img_data;
+	//jstring data = (jstring) env->CallObjectMethod(pixmap, getData);
+	/*const unsigned char * img_data = (const unsigned char*) intarray;
+	image.data = img_data;*/
 	image.height = env->CallIntMethod(pixmap, getHeight);
 	image.width =  env->CallIntMethod(pixmap, getWidth);
-	image.mode = OCRAD_greymap;
-
+	image.mode = OCRAD_colormap;
+	std::ofstream myfile;
+  	myfile.open ("data.txt");
+  	int i;
+  	jsize len = env->GetArrayLength(intarray);
+  	jint *body = env->GetIntArrayElements(intarray, 0);
+  	for (i=0; i<len; i++) {
+        myfile << body[i];
+    }
+    env->ReleaseIntArrayElements(intarray, body, 0);
+  	myfile.close();
+	/*
+	
+  	for(int i=0; i < len; i++)
+  		*/
+    //return env->GetArrayLength(intarray);
 	/*if (!ocrdes)
 		return -1;
 	if (!image || image->height < 3 || image->width < 3 ||
@@ -117,7 +134,8 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
 		ocrdes->ocr_errno = OCRAD_mem_error;
 		return -1;
 	}*/
-	return OCRAD_set_image(ocrdes,&image,false);
+	return 0;
+	//return OCRAD_set_image(ocrdes,&image,invert);
 }
 int OCRAD_set_image( OCRAD_Descriptor * const ocrdes,
                      const OCRAD_Pixmap * const image, const bool invert )

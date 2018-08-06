@@ -1,0 +1,1 @@
+move native.dll C:\Users\pankajkumar\Documents\EclipseWorkspace\JOCRAD\src\main\resources\dll\
