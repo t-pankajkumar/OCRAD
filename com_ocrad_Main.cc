@@ -92,18 +92,20 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
 	
 	//jstring data = (jstring) env->CallObjectMethod(pixmap, getData);
 	/*const unsigned char * img_data = (const unsigned char*) intarray;
-	image.data = img_data;*/
+	*/
+  	jint *body = env->GetIntArrayElements(intarray, 0);
+  	image.data = (const unsigned char*) body;
 	image.height = env->CallIntMethod(pixmap, getHeight);
 	image.width =  env->CallIntMethod(pixmap, getWidth);
 	image.mode = OCRAD_colormap;
 	std::ofstream myfile;
   	myfile.open ("data.txt");
+  	myfile << image.data;
+  	/*jsize len = env->GetArrayLength(intarray);
   	int i;
-  	jsize len = env->GetArrayLength(intarray);
-  	jint *body = env->GetIntArrayElements(intarray, 0);
   	for (i=0; i<len; i++) {
-        myfile << body[i];
-    }
+        myfile << (uint8_t) body[i];
+    }*/
     env->ReleaseIntArrayElements(intarray, body, 0);
   	myfile.close();
 	/*
@@ -134,8 +136,8 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
 		ocrdes->ocr_errno = OCRAD_mem_error;
 		return -1;
 	}*/
-	return 0;
-	//return OCRAD_set_image(ocrdes,&image,invert);
+	//return 0;
+	return OCRAD_set_image(ocrdes,&image,invert);
 }
 int OCRAD_set_image( OCRAD_Descriptor * const ocrdes,
                      const OCRAD_Pixmap * const image, const bool invert )
