@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include "ocradlib.h"
 #include "common.h"
@@ -90,53 +91,17 @@ JNIEXPORT jint JNICALL Java_com_ocrad_Main_OCRAD_1set_1image(JNIEnv* env,
     jintArray intarray = (jintArray) env->CallObjectMethod(pixmap, getData);
     OCRAD_Pixmap image;
 	
-	//jstring data = (jstring) env->CallObjectMethod(pixmap, getData);
-	/*const unsigned char * img_data = (const unsigned char*) intarray;
-	*/
   	jint *body = env->GetIntArrayElements(intarray, 0);
-  	image.data = (const unsigned char*) body;
+  	jsize len = env->GetArrayLength(intarray);
+  	std::string str;
+  	for (int i=0; i<len; i++) {
+        str += body[i];
+    }
+    image.data = (const unsigned char*) str.c_str();
 	image.height = env->CallIntMethod(pixmap, getHeight);
 	image.width =  env->CallIntMethod(pixmap, getWidth);
 	image.mode = OCRAD_colormap;
-	std::ofstream myfile;
-  	myfile.open ("data.txt");
-  	myfile << image.data;
-  	/*jsize len = env->GetArrayLength(intarray);
-  	int i;
-  	for (i=0; i<len; i++) {
-        myfile << (uint8_t) body[i];
-    }*/
     env->ReleaseIntArrayElements(intarray, body, 0);
-  	myfile.close();
-	/*
-	
-  	for(int i=0; i < len; i++)
-  		*/
-    //return env->GetArrayLength(intarray);
-	/*if (!ocrdes)
-		return -1;
-	if (!image || image->height < 3 || image->width < 3 ||
-	INT_MAX / image->width < image->height
-			|| (image->mode != OCRAD_bitmap && image->mode != OCRAD_greymap
-					&& image->mode != OCRAD_colormap)) {
-		ocrdes->ocr_errno = OCRAD_bad_argument;
-		return -1;
-	}
-
-	try {
-		Page_image * const page_image = new Page_image(*image, invert);
-		if (ocrdes->textpage) {
-			delete ocrdes->textpage;
-			ocrdes->textpage = 0;
-		}
-		if (ocrdes->page_image)
-			delete ocrdes->page_image;
-		ocrdes->page_image = page_image;
-	} catch (std::bad_alloc ) {
-		ocrdes->ocr_errno = OCRAD_mem_error;
-		return -1;
-	}*/
-	//return 0;
 	return OCRAD_set_image(ocrdes,&image,invert);
 }
 int OCRAD_set_image( OCRAD_Descriptor * const ocrdes,
